@@ -1,0 +1,307 @@
+﻿@{
+    ViewData["Title"] = "Report";
+}
+
+
+<form class="ui form segment" method="post" id="report">
+    <h3 class="ui header">Create Report</h3>
+    <p>User based task report</p>
+    <div class="two fields">
+        <div class="field">
+            <label>Date</label>
+            <input type="text" id="Date" name="Date" placeholder="Date" autocomplete="off">
+        </div>
+        <div class="field">
+            <label>Employee</label>
+            <select class="ui search dropdown employee" id="Employee" name="Employee">
+                <option value="">Select a employee</option>
+            </select>
+        </div>
+    </div>
+    <div class="two fields">
+        <div class="field">
+            <label>Project</label>
+            <select class="ui search dropdown project" id="Project" name="Project">
+                <option value="">Select a Project</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Task</label>
+            <select class="ui search dropdown task" id="Task" name="Task">
+                <option value="">Select a Task</option>
+            </select>
+        </div>
+    </div>
+    <div class="right item">
+        <div class="ui primary submit button">Submit</div>
+        <div class="ui clear button">Clear</div>
+    </div>
+
+    <div class="ui error message"></div>
+</form>
+<div class="">
+
+    <table class="ui blue small table repdiv" id="tblreport" style="width:100%;display:none;">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Task Name</th>
+                <th scope="col">Assigned To</th>
+                <th scope="col" style="width: 139px;">Clock In</th>
+                <th scope="col" style="width: 139px;">Clock Out</th>
+                <th scope="col">Total Time</th>
+                <th scope="col">Task Created</th>
+                <th scope="col" style="width: 139px;">Due Date</th>
+                <th scope="col">Pay Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+
+    <script type="text/javascript" charset="utf8" src="~/Theme/components/form.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+
+
+
+    <script>
+        $(function () {
+            $(function () {
+                $('#Date').daterangepicker({
+                    timePicker: false,
+                    startDate: moment(),
+                    endDate: moment(),
+                    locale: {
+                        format: 'DD/MM/YYYY'
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $(".repdiv").hide();
+            $('.dropdown').dropdown();
+
+            GetEmployees();
+            GetProjects();
+            GetTasks();
+            FormSubmit();
+        });
+
+        function GetEmployees() {
+            $(".employee").addClass('loading');
+            $.ajax({
+                url: "../api/Employees",
+                type: 'GET',
+                dataType: 'json', // added data type
+                success: function (res) {
+                    $.each(res, function (key, value) {
+                        if (value.deactivated == 0) {
+                            $("#Employee").append('<option value=' + value.id + '>' + value.name + '</option>');
+                        }
+                    });
+                    $(".employee").removeClass('loading');
+                }
+            });
+        }
+
+        function GetProjects() {
+            $(".project").addClass('loading');
+            $.ajax({
+                url: "../api/Projects",
+                type: 'GET',
+                dataType: 'json', // added data type
+                success: function (res) {
+                    $.each(res, function (key, value) {
+
+                        $("#Project").append('<option value=' + value.id + '>' + value.name + '</option>');
+                    });
+
+                    $(".project").removeClass('loading');
+                }
+            });
+        }
+
+
+        function GetTasks() {
+            $(".task").addClass('loading');
+            $.ajax({
+                url: "../api/Tasks",
+                type: 'GET',
+                dataType: 'json', // added data type
+                success: function (res) {
+                    $.each(res, function (key, value) {
+
+                        $("#Task").append('<option value=' + value.id + '>' + value.name + '</option>');
+                    });
+
+                    $(".task").removeClass('loading');
+                    $('.applyBtn').addClass('ui primary button');
+                    $('.cancelBtn').addClass('ui clear button');
+                }
+            });
+        }
+
+
+
+        function FormSubmit() {
+            $('form').form('clear');
+            $('.ui.form')
+                .form({
+                    fields: {
+                        name: {
+                            identifier: 'Date',
+                            rules: [
+                                {
+                                    type: 'empty',
+                                    prompt: 'Please select date'
+                                }
+                            ]
+                        },
+                       @* skills: {
+                            identifier: 'Employee',
+                            rules: [
+                                {
+                                    type: 'empty',
+                                    prompt: 'Please select employee'
+                                }
+                            ]
+                        }*@
+                    },
+                    onSuccess: function (event, fields) {
+                        event.preventDefault();
+                        //var report = $("#report").serialize();
+                        var valdata = $('#report').serializeArray();
+                        var json = {};
+
+                        $.each(valdata, function (i, field) {
+                            json[field.name] = field.value || '';
+                        });
+
+                        things = JSON.stringify(json);
+
+                        $(".form").addClass('loading');
+                        $(".repdiv").hide();
+                        $.ajax({
+                            type: "POST",
+                            url: "../api/GetReport",
+                            contentType: 'application/json; charset=utf-8',
+                            data: things,
+                            dataType: "json",
+                            encode: true,
+                        }).done(function (data) {
+                            $(".form").removeClass('loading');
+                            var i = 1;
+                            var t = $("#tblreport").DataTable({
+                                "bDestroy": true,
+                                "data": data,
+                                "searching": false,
+                                "paging": false,
+                                "ordering": false,
+                                "info": false,
+                                "bDestroy": true,
+                                "dom": 'Bfrtip',
+                                "buttons": ['excel', 'pdf', 'print'],
+                                "columns": [
+                                    { "data": "count" },
+                                    { "data": "taskName" },
+                                    { "data": "assignedTo" },
+                                    {
+                                        "render": function (data, type, full, meta) {
+                                            var due = full.clockIn;
+                                            var to = full.timezoneOffset;
+                                            var tot = due + to;
+                                            var date = new Date(tot).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+                                            let result = date.toString().substring(4, 16);
+                                            return date;
+                                        }
+                                    },
+                                    {
+                                        "render": function (data, type, full, meta) {
+                                            var due = full.clockOut;
+                                            var to = full.timezoneOffset;
+                                            var tot = due + to;
+                                            var date = new Date(tot).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+                                            let result = date.toString().substring(4, 16);
+                                            return date;
+                                        }
+                                    },
+                                    {
+                                        "data": "totalTime",
+                                        "render": function (data) {
+                                            var seconds = Math.floor(data / 1000) % 60,
+                                                minutes = Math.floor(data / (1000 * 60)) % 60,
+                                                hours = Math.floor(data / (1000 * 60 * 60));
+                                            hours = (hours < 10) ? "0" + hours : hours;
+                                            minutes = (minutes < 10) ? "0" + minutes : minutes;
+                                            seconds = (seconds < 10) ? "0" + seconds : seconds;
+                                            var result = hours + ":" + minutes + ":" + seconds;
+                                            var minuteVal = Math.round(minuteVal);
+                                            return result;
+                                        }
+                                    },
+                                    {
+                                        "render": function (data, type, full, meta) {
+                                            var due = full.taskCreated;
+                                            var to = full.timezoneOffset;
+                                            var tot = due + to;
+                                            var date = new Date(tot).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+                                            let result = date.toString().substring(4, 16);
+                                            return date;
+                                        }
+                                    },
+                                    {
+                                        "render": function (data, type, full, meta) {
+                                            var due = full.dueDate;
+                                            var to = full.timezoneOffset;
+                                            var tot = due + to;
+                                            var date = new Date(tot).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+                                            let result = date.toString().substring(0, 8);
+                                            return result;
+                                        }
+                                    },
+                                    { "data": "payRate" }
+                                ],
+                                "language": {
+                                    "emptyTable": "no data found"
+                                },
+                            });
+
+                            $(".repdiv").show();
+                            $(".sb-btn").removeClass('loading disabled');
+
+
+                            RemoveBtnClass();
+                        });
+                    }
+                });
+        }
+
+
+
+        function RemoveBtnClass() {
+            $(".dt-buttons").addClass("ui small basic icon buttons");
+            $(".dt-button").addClass("ui button");
+        }
+
+    </script>
+
+
+}

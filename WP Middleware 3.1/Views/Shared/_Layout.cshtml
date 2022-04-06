@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WP Middleware</title>
+    <link rel="icon" type="image/x-icon" href="~/images/logo.ico">
+    <link rel="stylesheet" type="text/css" href="~/Theme/semantic.css">
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+
+    <div class="ui borderless main menu">
+        <div class="ui text container">
+            <div class="header item">
+                <img class="logo" src="~/images/BR-small.png">
+                <a class="" asp-area="" asp-controller="Home" asp-action="Index" style="color: #1c4482;font-size: 22px;">WP Middleware</a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="ui main text container">
+        @RenderBody()
+    </div>
+
+    @* <div class="ui inverted vertical footer segment">
+            <div class="ui center aligned container">
+                <div class="ui inverted section divider"></div>
+                <img src="~/images/BR-small.png" class="ui centered mini image">
+                <div class="ui horizontal inverted small divided link list">
+                    &copy; 2022 - WP Middleware - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                </div>
+            </div>
+        </div>*@
+
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/Theme/semantic.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
